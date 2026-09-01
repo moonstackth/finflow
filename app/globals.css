@@ -1,0 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root{--cream:#F6F1E8;--paper:#FFFDF8;--ink:#3D382F;--muted:#82796B;--earth:#8A7153;--sage:#718568;--terracotta:#A9685B}
+*{box-sizing:border-box}html,body{min-height:100%}body{margin:0;background:var(--cream);color:var(--ink);font-family:"Kanit",sans-serif}button,input,select{font:inherit}button{cursor:pointer}::selection{background:#DCCEBB}
+@layer utilities{.soft-shadow{box-shadow:0 8px 30px rgba(61,56,47,.07)}.card{@apply rounded-3xl border border-[#E9E0D3] bg-paper soft-shadow}.btn-primary{@apply rounded-2xl bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:opacity-90}.btn-soft{@apply rounded-2xl border border-[#DED3C4] bg-[#FBF7EF] px-4 py-3 text-sm text-ink transition hover:bg-[#F2EBDD]}.input{@apply w-full rounded-2xl border border-[#DED3C4] bg-[#FFFDF8] px-4 py-3 text-ink outline-none focus:border-[#8A7153] focus:ring-2 focus:ring-[#8A7153]/10}}
+.donut{width:170px;height:170px;border-radius:9999px;display:grid;place-items:center;flex:none}.donut-hole{width:112px;height:112px;border-radius:9999px;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px}.donut-hole b{font-size:18px}.donut-hole span{color:var(--muted);font-size:12px}

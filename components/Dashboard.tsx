@@ -24,7 +24,8 @@ function Empty({text="ยังไม่มีข้อมูล"}){return <div 
 function Actions({onEdit,onDelete,disabled=false}:{onEdit:()=>void;onDelete:()=>void;disabled?:boolean}){return <div className="flex gap-1"><button disabled={disabled} className="btn-soft !rounded-xl !px-2.5 !py-1.5 text-xs disabled:opacity-40" onClick={onEdit}><Pencil size={13}/></button><button disabled={disabled} className="rounded-xl border border-[#E4D6C7] px-2.5 py-1.5 text-xs text-terracotta disabled:opacity-40" onClick={onDelete}><Trash2 size={13}/></button></div>}
 function CrudCard({title,subtitle,onAdd,children}:{title:string;subtitle?:string;onAdd:()=>void;children:ReactNode}){return <section className="card p-5 sm:p-6"><div className="mb-5 flex items-start justify-between gap-3"><div><p className="text-xs uppercase tracking-wider text-muted">FinFlow</p><h2 className="text-xl font-semibold">{title}</h2>{subtitle&&<p className="mt-1 text-sm text-muted">{subtitle}</p>}</div><button className="btn-soft flex items-center gap-1 !px-3 !py-2" onClick={onAdd}><Plus size={16}/> เพิ่ม</button></div>{children}</section>}
 export default function Dashboard(){
- const { householdId } = useContext(HouseholdContext);
+ const { householdId, role } = useContext(HouseholdContext);
+const canEdit = role === "OWNER" || role === "owner";
  const [state,setState]=useState<FinanceState>(emptyState),[ready,setReady]=useState(false),[syncing,setSyncing]=useState(false),[tab,setTab]=useState<Tab>("dashboard"),[month,setMonth]=useState(monthKey()),[modal,setModal]=useState<string|null>(null),[editing,setEditing]=useState<any>(null),[confirm,setConfirm]=useState<any>(null),[toast,setToast]=useState("");
  const cloudReady=!!supabase&&!!householdId;
  useEffect(()=>{

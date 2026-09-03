@@ -21,8 +21,32 @@ function Field({label,value,onChange,type="text",placeholder="",required=false}:
 function Select({label,value,onChange,options}:{label:string;value:string;onChange:(v:string)=>void;options:[string,string][]}){return <label className="block"><span className="text-sm text-muted">{label}</span><select className="input mt-2" value={value} onChange={e=>onChange(e.target.value)}>{options.map(([v,t])=><option key={v} value={v}>{t}</option>)}</select></label>}
 function MonthNav({month,onMonth,closed}:{month:string;onMonth:(d:number)=>void;closed?:boolean}){return <div className="mb-4 flex items-center justify-between rounded-2xl border border-[#E9E0D3] bg-[#FBF7EF] px-3 py-2"><button className="rounded-xl p-2" onClick={()=>onMonth(-1)}><ChevronLeft/></button><div className="text-center"><p className="text-xs text-muted">เดือนที่กำลังดู</p><b>{monthTitle(month)}</b>{closed&&<p className="text-xs text-sage">🔒 ปิดเดือนแล้ว</p>}</div><button className="rounded-xl p-2" onClick={()=>onMonth(1)}><ChevronRight/></button></div>}
 function Empty({text="ยังไม่มีข้อมูล"}){return <div className="rounded-2xl border border-dashed border-[#D8CCBC] p-6 text-center text-sm text-muted">{text}</div>}
-function Actions({onEdit,onDelete,disabled=false}:{onEdit:()=>void;onDelete:()=>void;disabled?:boolean}){return <div className="flex gap-1"><button disabled={disabled} className="btn-soft !rounded-xl !px-2.5 !py-1.5 text-xs disabled:opacity-40" onClick={onEdit}><Pencil size={13}/></button><button disabled={disabled} className="rounded-xl border border-[#E4D6C7] px-2.5 py-1.5 text-xs text-terracotta disabled:opacity-40" onClick={onDelete}><Trash2 size={13}/></button></div>}
-function CrudCard({title,subtitle,onAdd,children}:{title:string;subtitle?:string;onAdd:()=>void;children:ReactNode}){return <section className="card p-5 sm:p-6"><div className="mb-5 flex items-start justify-between gap-3"><div><p className="text-xs uppercase tracking-wider text-muted">FinFlow</p><h2 className="text-xl font-semibold">{title}</h2>{subtitle&&<p className="mt-1 text-sm text-muted">{subtitle}</p>}</div><button className="btn-soft flex items-center gap-1 !px-3 !py-2" onClick={onAdd}><Plus size={16}/> เพิ่ม</button></div>{children}</section>}
+function Actions({onEdit,onDelete,disabled=false,canEdit=true}:{onEdit:()=>void;onDelete:()=>void;disabled?:boolean;canEdit?:boolean}){
+  if(!canEdit)return null;
+  return <div className="flex gap-1">
+    <button disabled={disabled} className="btn-soft !rounded-xl !px-2.5 !py-1.5 text-xs disabled:opacity-40" onClick={onEdit}>
+      <Pencil size={13}/>
+    </button>
+    <button disabled={disabled} className="rounded-xl border border-[#E4D6C7] px-2.5 py-1.5 text-xs text-terracotta disabled:opacity-40" onClick={onDelete}>
+      <Trash2 size={13}/>
+    </button>
+  </div>
+}
+function CrudCard({title,subtitle,onAdd,canEdit=true,children}:{title:string;subtitle?:string;onAdd:()=>void;canEdit?:boolean;children:ReactNode}){
+  return <section className="card p-5 sm:p-6">
+    <div className="mb-5 flex items-start justify-between gap-3">
+      <div>
+        <p className="text-xs uppercase tracking-wider text-muted">FinFlow</p>
+        <h2 className="text-xl font-semibold">{title}</h2>
+        {subtitle&&<p className="mt-1 text-sm text-muted">{subtitle}</p>}
+      </div>
+      {canEdit&&<button className="btn-soft flex items-center gap-1 !px-3 !py-2" onClick={onAdd}>
+        <Plus size={16}/> เพิ่ม
+      </button>}
+    </div>
+    {children}
+  </section>
+}
 export default function Dashboard(){
  const { householdId, role } = useContext(HouseholdContext);
 const canEdit = role === "OWNER" || role === "owner";
@@ -97,8 +121,12 @@ const canEdit = role === "OWNER" || role === "owner";
   setModal(null);
   flash("บันทึกข้อมูลแล้ว");
 }
- function editItem(kind:string,data:any){if(closed){flash("เดือนนี้ปิดแล้ว ไม่สามารถแก้ย้อนหลังได้");return}update(s=>{(s as any)[kind]=(s as any)[kind].map((x:any)=>x.id===data.id?data:x);return s});setModal(null);setEditing(null);flash("แก้ไขข้อมูลแล้ว")}
- function removeItem(kind:string,id:string,label:string){if(closed)return flash("เดือนนี้ปิดแล้ว ไม่สามารถลบย้อนหลังได้");setConfirm({title:"ยืนยันการลบ",description:<p>ต้องการลบ <b>{label}</b> ใช่หรือไม่?</p>,action:()=>{update(s=>{(s as any)[kind]=(s as any)[kind].filter((x:any)=>x.id!==id);return s});setConfirm(null);flash("ลบรายการแล้ว")}})}
+ function editItem(kind:string,data:any){
+  if(!canEdit){flash("สมาชิกสามารถดูข้อมูลได้อย่างเดียว");return}
+  if(closed){
+function removeItem(kind:string,id:string,label:string){
+  if(!canEdit){flash("สมาชิกสามารถดูข้อมูลได้อย่างเดียว");return}
+  if(closed)
  function pay(p:Payment){if(closed)return;setEditing(p);setModal("payment")}
  function savePayment(p:Payment,actual:number,note:string){update(s=>{s.payments=s.payments.filter(x=>x.id!==p.id);s.payments.push({...p,actualAmount:actual,status:"paid",paidDate:p.paidDate||new Date().toISOString().slice(0,10),note});if(p.category==="debt"&&p.sourceId){const d=s.debts.find(x=>x.id===p.sourceId);if(d)d.currentBalance=Math.max(0,d.currentBalance-(actual||p.plannedAmount));}if(p.category==="asset_debt"&&p.sourceId){const a=s.assets.find(x=>x.id===p.sourceId);if(a)a.remainingDebt=Math.max(0,a.remainingDebt-(actual||p.plannedAmount));}if(p.category==="saving"&&p.sourceId){const g=s.savings.find(x=>x.id===p.sourceId);if(g)g.currentAmount=Math.min(g.targetAmount,g.currentAmount+(actual||p.plannedAmount));}if(p.category==="investment"&&p.sourceId){const i=s.investments.find(x=>x.id===p.sourceId);if(i)i.totalInvested+=(actual||p.plannedAmount);s.investmentEntries.push({id:uid(),investmentId:p.sourceId,month,amount:actual||p.plannedAmount});}return s});setModal(null);setEditing(null);flash("บันทึกการจ่ายแล้ว")}
  function closeMonth(){if(closed)return;const current=ensureMonthlyPayments(state,month);const summary=totals(current,month);const snap:MonthlySnapshot={month,incomes:clone(state.incomes.filter(x=>x.date.startsWith(month))),payments:clone(current.payments.filter(x=>x.dueDate.startsWith(month))),totals:{income:summary.income,allocated:summary.allocated,actual:summary.actual,cashFlow:summary.cashFlow,expense:summary.expense,debt:summary.debt,assetDebt:summary.assetDebt,insurance:summary.insurance,saving:summary.saving,investment:summary.investment,assets:summary.assets,liabilities:summary.liabilities,netWorth:summary.netWorth},closedAt:new Date().toISOString()};update(s=>{s.closedMonths=s.closedMonths.filter(x=>x.month!==month);s.closedMonths.push(snap);s.payments=current.payments;return s});setModal(null);flash(`ปิดเดือน${monthTitle(month)}แล้ว`)}

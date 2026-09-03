@@ -83,7 +83,20 @@ const canEdit = role === "OWNER" || role === "owner";
  const closed=state.closedMonths.find(x=>x.month===month);const working=useMemo(()=>closed?{...state,payments:closed.payments,incomes:closed.incomes}:ensureMonthlyPayments(state,month),[state,month,closed]);const t=useMemo(()=>closed?closed.totals:totals(working,month),[working,month,closed]);const paymentHistory=useMemo(()=>{const byId=new Map<string,Payment>();[...state.payments,...working.payments].forEach(p=>byId.set(p.id,p));return [...byId.values()]},[state.payments,working.payments]);
  function flash(s:string){setToast(s);setTimeout(()=>setToast(""),2200)} function shift(d:number){const [y,m]=month.split("-").map(Number);setMonth(monthKey(new Date(y,m-1+d,1)))}
  function update(fn:(s:FinanceState)=>FinanceState){setState(s=>fn(clone(s)))}
- function addItem(kind:string,data:any){update(s=>{(s as any)[kind].push({...data,id:uid()});return s});setModal(null);flash("บันทึกข้อมูลแล้ว")}
+ function addItem(kind:string,data:any){
+  if(!canEdit){
+    flash("สมาชิกสามารถดูข้อมูลได้อย่างเดียว");
+    return;
+  }
+
+  update(s=>{
+    (s as any)[kind].push({...data,id:uid()});
+    return s;
+  });
+
+  setModal(null);
+  flash("บันทึกข้อมูลแล้ว");
+}
  function editItem(kind:string,data:any){if(closed){flash("เดือนนี้ปิดแล้ว ไม่สามารถแก้ย้อนหลังได้");return}update(s=>{(s as any)[kind]=(s as any)[kind].map((x:any)=>x.id===data.id?data:x);return s});setModal(null);setEditing(null);flash("แก้ไขข้อมูลแล้ว")}
  function removeItem(kind:string,id:string,label:string){if(closed)return flash("เดือนนี้ปิดแล้ว ไม่สามารถลบย้อนหลังได้");setConfirm({title:"ยืนยันการลบ",description:<p>ต้องการลบ <b>{label}</b> ใช่หรือไม่?</p>,action:()=>{update(s=>{(s as any)[kind]=(s as any)[kind].filter((x:any)=>x.id!==id);return s});setConfirm(null);flash("ลบรายการแล้ว")}})}
  function pay(p:Payment){if(closed)return;setEditing(p);setModal("payment")}

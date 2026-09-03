@@ -6,7 +6,15 @@ import { supabase } from "../lib/supabase";
 import { getOrCreateHousehold, Household, HouseholdMember } from "../lib/household";
 import { LogIn, Mail, Lock, Sprout, Home, UserRound, LogOut, ChevronDown } from "lucide-react";
 
-export const HouseholdContext = createContext<{ householdId: string | null; userId: string | null }>({ householdId: null, userId: null });
+export const HouseholdContext = createContext<{
+  householdId: string | null;
+  userId: string | null;
+  role: string | null;
+}>({
+  householdId: null,
+  userId: null,
+  role: null,
+});
 
 export default function AuthGate({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<any>(null);
@@ -144,7 +152,13 @@ export default function AuthGate({ children }: { children: ReactNode }) {
           </div>
         )}
 
-        <HouseholdContext.Provider value={{ householdId: household?.id || null, userId: session.user?.id || null }}>
+      <HouseholdContext.Provider
+  value={{
+    householdId: household?.id || null,
+    userId: session.user?.id || null,
+    role: member?.role || null,
+  }}
+>
           {children}
         </HouseholdContext.Provider>
       </div>
